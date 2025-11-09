@@ -1,6 +1,8 @@
 import { createContext, useContext, useEffect, useState } from "react";
-import { onAuthStateChanged } from "firebase/auth";
+import { onAuthStateChanged, signOut } from "firebase/auth";
 import { auth } from "../firebase/config";
+import { doc, getDoc } from "firebase/firestore";
+import { db } from "../firebase/config";
 
 const AuthContext = createContext();
 
@@ -9,14 +11,26 @@ export function AuthProvider({ children }) {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
-            setUser(currentUser);
+        const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
+            if (firebaseUser) {
+            // Fetch the Firestore user doc
+            const userDoc = await getDoc(doc(db, "users", firebaseUser.uid));
+            const data = userDoc.exists() ? userDoc.data() : {};
+
+            // Merge both Firebase Auth user and Firestore fields
+            setUser({
+                ...firebaseUser,
+                displayName: data.name || firebaseUser.displayName || null,
+                role: data.role || null,
+            });
+            } else {
+            setUser(null);
+            }
             setLoading(false);
         });
 
-        // cleans up listener on dismount
         return unsubscribe;
-    }, []);
+        }, []);
 
     function logout() {
         return signOut(auth);
@@ -25,9 +39,9 @@ export function AuthProvider({ children }) {
     const value = { user, loading, logout };
 
     return (
-        <AuthContext.Provider value={value}>
-            {!loading && children}
-        </AuthContext.Provider>
+      <AuthContext.Provider value={value}>
+        {loading ? <div>Loading...</div> : children}
+      </AuthContext.Provider>
     );
 }
 

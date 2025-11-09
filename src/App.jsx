@@ -1,11 +1,11 @@
 import { Routes, Route, Link } from "react-router-dom";
-import HomePage from "../pages/HomePage";
-import LoginPage from "../pages/LoginPage";
-import SignupPage from "../pages/SignupPage";
+import HomePage from "./pages/HomePage";
+import LoginPage from "./pages/LoginPage";
+import SignupPage from "./pages/SignupPage";
 import { useAuth } from "./context/AuthContext";
 
 export default function App() {
-  const { user, loading } = useAuth();
+  const { user, loading, logout } = useAuth();
 
   async function handleLogout() {
     try {
@@ -44,7 +44,7 @@ export default function App() {
         {user && (
           <div style={{ display: "flex", gap: "0.75rem", alignItems: "center" }}>
             <span style={{ fontSize: "0.9rem", opacity: 0.8, font:"15px Arial, sans-serif" }}>
-              Signed in as <strong>{user.email}</strong>
+              Signed in as <strong>{user.displayName}</strong>
             </span>
             <button
               onClick={handleLogout}
