@@ -6,6 +6,7 @@ import { useAuth } from "./context/AuthContext";
 import MyRequestsPage from "./pages/MyRequestsPage";
 import BrowseRequestsPage from "./pages/BrowseRequestsPage";
 import "./styles/styles.css";
+import Nearby from "./pages/Nearby";
 
 
 export default function App() {
@@ -39,6 +40,7 @@ export default function App() {
             <>
               <Link to="/my-requests">My Requests</Link>
               <Link to="/requests">Browse</Link>
+              <Link to="/nearby">Map</Link>
               <button
                 onClick={handleLogout}
                 style={{
@@ -71,6 +73,7 @@ export default function App() {
           <Route path="/signup" element={<SignupPage />} />
           <Route path="/my-requests" element={<MyRequestsPage />} />
           <Route path="/requests" element={<BrowseRequestsPage />} />
+          <Route path="/nearby" element={<Nearby />} />
         </Routes>
       </main>
     </div>

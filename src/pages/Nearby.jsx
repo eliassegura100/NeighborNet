@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { getFunctions, httpsCallable } from "firebase/functions";
-import { app } from "../firebase/config";
+import { app } from "../firebase";
 import MapView from "../components/MapView";
 
 export default function Nearby() {
