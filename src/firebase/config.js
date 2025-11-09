@@ -14,6 +14,7 @@ const firebaseConfig = {
   measurementId: "G-LLMTJQ5HVL"
 };
 
+// Initialize Firebase
 const app = initializeApp(firebaseConfig);
 
 // Export services for use throughout the app

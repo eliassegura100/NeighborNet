@@ -1,9 +1,28 @@
 rules_version = '2';
-
 service cloud.firestore {
-  match /databases/{database}/documents {
-    match /{document=**} {
-      allow read, write: if false;
+  match /databases/{db}/documents {
+
+    function isSignedIn() { return request.auth != null; }
+    function isRequester() { return isSignedIn() && request.auth.token.role == 'requester'; }
+    function isVolunteer() { return isSignedIn() && request.auth.token.role == 'volunteer'; }
+
+    // users/{uid}
+    match /users/{uid} {
+      allow read: if isSignedIn();
+      allow write: if isSignedIn() && request.auth.uid == uid;
+    }
+
+    // requests/{id}
+    match /requests/{id} {
+      allow read: if true; // show public requests
+      // Create only via callable (prevents spoofing); block direct client create
+      allow create, update, delete: if false;
+    }
+
+    // impactMetrics/singleton
+    match /impactMetrics/{doc} {
+      allow read: if true;
+      allow write: if false; // updated by Cloud Functions only
     }
   }
 }
