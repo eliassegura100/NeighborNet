@@ -3,26 +3,23 @@ service cloud.firestore {
   match /databases/{db}/documents {
 
     function isSignedIn() { return request.auth != null; }
-    function isRequester() { return isSignedIn() && request.auth.token.role == 'requester'; }
-    function isVolunteer() { return isSignedIn() && request.auth.token.role == 'volunteer'; }
+    // If you keep these, use them in allow statements
+    // function isRequester() { return isSignedIn() && request.auth.token.role == 'requester'; }
+    // function isVolunteer() { return isSignedIn() && request.auth.token.role == 'volunteer'; }
 
-    // users/{uid}
     match /users/{uid} {
       allow read: if isSignedIn();
       allow write: if isSignedIn() && request.auth.uid == uid;
     }
 
-    // requests/{id}
     match /requests/{id} {
-      allow read: if true; // show public requests
-      // Create only via callable (prevents spoofing); block direct client create
-      allow create, update, delete: if false;
+      allow read: if true;
+      allow write: if false; // server (Cloud Functions) only
     }
 
-    // impactMetrics/singleton
     match /impactMetrics/{doc} {
       allow read: if true;
-      allow write: if false; // updated by Cloud Functions only
+      allow write: if false; // server only
     }
   }
 }
