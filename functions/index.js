@@ -229,3 +229,21 @@ exports.findNearbyOpenRequests = functions.https.onCall(async (data, context) =>
   });
   return { items };
 });
+
+exports.updateVolunteerProfile = functions.https.onCall(async (data, context) => {
+  if (!context.auth) throw new functions.https.HttpsError("unauthenticated", "Sign in required");
+  const { name, phone, availabilityRadiusKm, location } = data || {};
+  const uid = context.auth.uid;
+
+  const patch = {};
+  if (name)  patch.name = name;
+  if (phone) patch.phone = phone;
+  if (typeof availabilityRadiusKm === "number") patch.availabilityRadiusKm = availabilityRadiusKm;
+  if (location && typeof location.lat === "number" && typeof location.lng === "number") patch.location = location;
+
+  patch.role = "volunteer"; // enforce role if you want
+  patch.updatedAt = admin.firestore.FieldValue.serverTimestamp();
+
+  await admin.firestore().collection("users").doc(uid).set(patch, { merge: true });
+  return { ok: true };
+});

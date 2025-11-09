@@ -4,6 +4,9 @@ import LoginPage from "./pages/LoginPage";
 import SignupPage from "./pages/SignupPage";
 import { useAuth } from "./context/AuthContext";
 
+import { app, auth, db, functions } from "./firebase";
+import { logout } from "./firebase/auth";
+
 export default function App() {
   const { user, loading, logout } = useAuth();
 
