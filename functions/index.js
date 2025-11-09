@@ -199,3 +199,33 @@ exports.notifyOnClaim = functions.firestore
       }
     }
   });
+
+// functions/index.js (add to your existing exports)
+exports.findNearbyOpenRequests = functions.https.onCall(async (data, context) => {
+  if (!context.auth) throw new functions.https.HttpsError("unauthenticated", "Sign in required");
+  const { lat, lng, radiusKm = 5, limit = 30 } = data || {};
+  if (typeof lat !== "number" || typeof lng !== "number") {
+    throw new functions.https.HttpsError("invalid-argument", "lat/lng required");
+  }
+
+  const dLat = radiusKm / 110.574;
+  const dLng = radiusKm / (111.320 * Math.cos((lat * Math.PI) / 180));
+  const minLat = lat - dLat, maxLat = lat + dLat, minLng = lng - dLng, maxLng = lng + dLng;
+
+  const snap = await admin.firestore()
+    .collection("requests")
+    .where("status", "==", "open")
+    .where("location.lat", ">=", minLat)
+    .where("location.lat", "<=", maxLat)
+    .limit(limit)
+    .get();
+
+  const items = [];
+  snap.forEach(d => {
+    const r = d.data();
+    if (r?.location?.lng >= minLng && r.location.lng <= maxLng) {
+      items.push({ id: d.id, ...r });
+    }
+  });
+  return { items };
+});
