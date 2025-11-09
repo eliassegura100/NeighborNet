@@ -1,14 +1,14 @@
-import { UseState } from "react";
-import { UseNavigate, Link } from "react-router-dom";
-import {signInWithEmailAndPassword} from "firebase/auth";
-import { auth } from "../src/firebase/auth";
+import { useState } from "react";
+import { useNavigate, Link } from "react-router-dom";
+import { signInWithEmailAndPassword } from "firebase/auth";
+import { auth } from "../src/firebase/config";
 
 export default function LoginPage() {
-    const navigate = UseNavigate();
-    const [email, setEmail] = UseState("");
-    const [password, setPassword] = UseState("");
-    const [error, setError] = UseState("");
-    const [loading, setLoading] = UseState(false);
+    const navigate = useNavigate();
+    const [email, setEmail] = useState("");
+    const [password, setPassword] = useState("");
+    const [error, setError] = useState("");
+    const [loading, setLoading] = useState(false);
 
     async function handleSubmit(event) {
         event.preventDefault();
@@ -28,7 +28,7 @@ export default function LoginPage() {
 
     return (
         <div style={{ maxWidth: "400px", margin: "2rem auto", padding: "2rem", textAlign: "center" }}>
-            <h1 style={{ marginBottom: "1rem", textAlign: "center" }}>Login to NeighborNet</h1>
+            <h1 style={{ marginBottom: "1rem", textAlign: "center", font:"bold 35px Arial, sans-serif"}}>Login to NeighborNet</h1>
             { error && (
                 <div 
                     style={{
@@ -44,7 +44,7 @@ export default function LoginPage() {
             )}
 
             <form onSubmit={handleSubmit}>
-                <label style={{ display: "block", marginBottom: "0.5rem" }}>
+                <label style={{ display: "block", marginBottom: "0.5rem", font:"15px Arial, sans-serif" }}>
                     Email:
                     <input
                         type="email"
@@ -60,7 +60,7 @@ export default function LoginPage() {
                     />
                 </label>
 
-                <label style={{ display: "block", marginBottom: "0.5rem" }}>
+                <label style={{ display: "block", marginBottom: "0.5rem", font:"15px Arial, sans-serif" }}>
                     Password:
                     <input
                         type="password"
@@ -84,7 +84,7 @@ export default function LoginPage() {
                         padding: "0.75rem",
                         borderRadius: "0.5rem",
                         border: "none",
-                        backgroundColor: "#2563eb",
+                        backgroundColor: "#14a301ff",
                         color: "white",
                         fontWeight: "bold",
                         cursor: loading ? "not-allowed" : "pointer",
@@ -93,9 +93,9 @@ export default function LoginPage() {
                     {loading ? "Logging in..." : "Login"}
                 </button>
             </form>
-            <p style={{ marginTop: "1rem", textAlign: "center" }}>
+            <p style={{ marginTop: "1rem", textAlign: "center", font:"15px Arial, sans-serif" }}>
                 Don't have an account? {" "}
-                <Link to="/signup" style={{ color: "#2563eb" }}>
+                <Link to="/signup" style={{ color: "#2563eb", font:"15px Arial, sans-serif" }}>
                    Register
                 </Link>
             </p>
