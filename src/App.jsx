@@ -3,6 +3,9 @@ import HomePage from "./pages/HomePage";
 import LoginPage from "./pages/LoginPage";
 import SignupPage from "./pages/SignupPage";
 import { useAuth } from "./context/AuthContext";
+import MyRequestsPage from "./pages/MyRequestsPage";
+import BrowseRequestsPage from "./pages/BrowseRequestsPage";
+import "./styles/styles.css";
 
 
 export default function App() {
@@ -18,60 +21,58 @@ export default function App() {
 
   return (
     <div>
-      {/* Very simple navbar */}
-      <nav
-        style={{
-          display: "flex",
-          gap: "1rem",
-          padding: "1rem",
-          borderBottom: "1px solid #e5e7eb",
-          alignItems: "center",
-          justifyContent: "space-between",
-        }}
-      >
-        <div style={{ display: "flex", gap: "1rem" }}>
-          <Link to="/">Home</Link>
+      {/* ✅ Green toolbar */}
+      <header className="navbar">
+        <div className="navbar-left">
+          {/* Placeholder logo — replace URL later */}
+          <img
+            src="https://via.placeholder.com/40x40.png?text=N"
+            alt="NeighborNet Logo"
+            className="navbar-logo"
+          />
+          <span className="navbar-title">NeighborNet</span>
+        </div>
 
-          {/* If NO user is logged in, show Login & Signup */}
-          {!user && (
+        <nav className="navbar-links">
+          <Link to="/">Home</Link>
+          {user ? (
+            <>
+              <Link to="/my-requests">My Requests</Link>
+              <Link to="/requests">Browse</Link>
+              <button
+                onClick={handleLogout}
+                style={{
+                  background: "white",
+                  color: "#15803d",
+                  border: "none",
+                  borderRadius: "6px",
+                  padding: "0.35rem 0.75rem",
+                  cursor: "pointer",
+                  fontWeight: "600",
+                }}
+              >
+                Logout
+              </button>
+            </>
+          ) : (
             <>
               <Link to="/login">Login</Link>
               <Link to="/signup">Sign Up</Link>
             </>
           )}
-        </div>
+        </nav>
+      </header>
 
-        {/* If user IS logged in, show email + Logout button */}
-        {user && (
-          <div style={{ display: "flex", gap: "0.75rem", alignItems: "center" }}>
-            <span style={{ fontSize: "0.9rem", opacity: 0.8, font:"15px Arial, sans-serif" }}>
-              Signed in as <strong>{user.displayName}</strong>
-            </span>
-            <button
-              onClick={handleLogout}
-              style={{
-                padding: "0.35rem 0.75rem",
-                borderRadius: "0.5rem",
-                border: "none",
-                backgroundColor: "#ef4444",
-                color: "white",
-                cursor: "pointer",
-                fontSize: "0.85rem",
-              }}
-            >
-              Logout
-            </button>
-          </div>
-        )}
-      </nav>
-
-      {/* Routes stay the same */}
-      <Routes>
-        <Route path="/" element={<HomePage />} />
-        <Route path="/login" element={<LoginPage />} />
-        <Route path="/signup" element={<SignupPage />} />
-        {/* later: /onboarding, /my-requests, /requests, etc. */}
-      </Routes>
+      {/* ✅ Main content area with background card */}
+      <main className="page-content">
+        <Routes>
+          <Route path="/" element={<HomePage />} />
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/signup" element={<SignupPage />} />
+          <Route path="/my-requests" element={<MyRequestsPage />} />
+          <Route path="/requests" element={<BrowseRequestsPage />} />
+        </Routes>
+      </main>
     </div>
   );
 }
