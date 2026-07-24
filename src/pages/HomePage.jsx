@@ -8,7 +8,7 @@ export default function HomePage() {
       <p style={{ fontSize: "1.1rem", maxWidth: "600px", margin: "0 auto", lineHeight: 1.6 }}>
         A community-powered platform to connect neighbors who need a helping hand
         with those who are happy to assist. Create requests, volunteer, and make
-        an impact — one connection at a time.
+        an impact, one connection at a time!
       </p>
       <img
         src="https://via.placeholder.com/600x250.png?text=Community+Help+Illustration"
