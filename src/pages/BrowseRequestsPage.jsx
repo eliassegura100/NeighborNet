@@ -1,7 +1,7 @@
-// src/pages/BrowseRequestsPage.jsx
 import { useEffect, useState } from "react";
 import { useAuth } from "../context/AuthContext";
 import { findNearbyOpenRequests, claimRequest } from "../requestApi";
+import { UrgencyBadge } from "../components/Badges";
 
 export default function BrowseRequestsPage() {
   const { user } = useAuth();
@@ -50,8 +50,6 @@ export default function BrowseRequestsPage() {
     setClaimingId(id);
     try {
       await claimRequest(id);
-      alert("Request claimed! Check your messages / app for details.");
-      // You could also remove it from local list:
       setRequests((prev) => prev.filter((r) => r.id !== id));
     } catch (err) {
       console.error(err);
@@ -61,40 +59,46 @@ export default function BrowseRequestsPage() {
     }
   }
 
-  if (loading) return <div style={{ padding: "1rem" }}>Loading nearby requests...</div>;
-
   return (
-    <div style={{ maxWidth: "700px", margin: "2rem auto", padding: "1rem" }}>
-      <h1>Open Requests Near You</h1>
-      {error && <p style={{ color: "red" }}>{error}</p>}
-      {requests.length === 0 ? (
-        <p>No open requests found within 5km of your location.</p>
+    <div>
+      <div className="page-header">
+        <div className="page-eyebrow">Volunteer</div>
+        <h1>Open requests near you</h1>
+        <p>Anything within 5km. Claim one and let your neighbor know you're on the way.</p>
+      </div>
+
+      {loading && <div className="state-banner state-banner-loading">Loading nearby requests…</div>}
+      {error && <div className="state-banner state-banner-error">{error}</div>}
+
+      {!loading && requests.length === 0 && !error ? (
+        <div className="card empty-state">
+          <p>No open requests within 5km right now — check back soon.</p>
+        </div>
       ) : (
-        <ul style={{ listStyle: "none", padding: 0 }}>
+        <div className="request-grid">
           {requests.map((r) => (
-            <li
-              key={r.id}
-              style={{
-                border: "1px solid #e5e7eb",
-                borderRadius: "0.75rem",
-                padding: "0.75rem 1rem",
-                marginBottom: "0.75rem",
-              }}
-            >
-              <strong>{r.title}</strong>
-              <div>{r.description}</div>
-              <div>Type: {r.type} • Urgency: {r.urgency}</div>
-              {r.address && <div>Address: {r.address}</div>}
-              <button
-                onClick={() => handleClaim(r.id)}
-                disabled={claimingId === r.id}
-                style={{ marginTop: "0.5rem" }}
-              >
-                {claimingId === r.id ? "Claiming..." : "Claim this request"}
-              </button>
-            </li>
+            <div key={r.id} className="card request-card">
+              <div className="request-card-top">
+                <h3>{r.title}</h3>
+                <UrgencyBadge urgency={r.urgency} />
+              </div>
+              <p className="request-desc">{r.description}</p>
+              <div className="request-meta">
+                <span className="request-meta-item">{r.type}</span>
+              </div>
+              {r.address && <div className="request-meta">{r.address}</div>}
+              <div className="request-card-actions">
+                <button
+                  className="btn btn-accent btn-sm"
+                  onClick={() => handleClaim(r.id)}
+                  disabled={claimingId === r.id}
+                >
+                  {claimingId === r.id ? "Claiming…" : "On the way!"}
+                </button>
+              </div>
+            </div>
           ))}
-        </ul>
+        </div>
       )}
     </div>
   );

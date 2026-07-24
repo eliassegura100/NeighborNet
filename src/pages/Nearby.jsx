@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { getFunctions, httpsCallable } from "firebase/functions";
 import { app } from "../firebase";
 import MapView from "../components/MapView";
+import { UrgencyBadge } from "../components/Badges";
 
 export default function Nearby() {
   const [coords, setCoords] = useState(null);
@@ -25,14 +26,27 @@ export default function Nearby() {
   }, [coords]);
 
   return (
-    <div className="p-4 space-y-4">
-      <h1 className="text-xl font-semibold">Nearby Requests</h1>
-      <MapView center={coords} items={items} />
-      <div className="grid gap-3">
+    <div>
+      <div className="page-header">
+        <div className="page-eyebrow">Map</div>
+        <h1>Nearby requests</h1>
+        <p>Everything open within 5km of you, plotted on the map below.</p>
+      </div>
+
+      <div className="map-shell">
+        <MapView center={coords} items={items} />
+      </div>
+
+      <div className="request-grid" style={{ marginTop: "1.5rem" }}>
         {items.map((r) => (
-          <div key={r.id} className="p-3 rounded-xl border">
-            <div className="font-medium">{r.title}</div>
-            <div className="text-sm opacity-70">{r.type} • {r.urgency}</div>
+          <div key={r.id} className="card request-card">
+            <div className="request-card-top">
+              <h3>{r.title}</h3>
+              <UrgencyBadge urgency={r.urgency} />
+            </div>
+            <div className="request-meta">
+              <span className="request-meta-item">{r.type}</span>
+            </div>
           </div>
         ))}
       </div>
