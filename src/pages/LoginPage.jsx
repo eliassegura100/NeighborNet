@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { signInWithEmailAndPassword } from "firebase/auth";
-import { auth } from "../firebase";
+import { supabase } from "../supabase";
 
 export default function LoginPage() {
   const navigate = useNavigate();
@@ -16,11 +15,12 @@ export default function LoginPage() {
     setLoading(true);
 
     try {
-      await signInWithEmailAndPassword(auth, email, password);
+      const { error } = await supabase.auth.signInWithPassword({ email, password });
+      if (error) throw error;
       navigate("/");
     } catch (err) {
       console.error("Login error:", err);
-      setError("Failed to log in. Please check your credentials and try again.");
+      setError(err.message || "Failed to log in. Please check your credentials and try again.");
     } finally {
       setLoading(false);
     }

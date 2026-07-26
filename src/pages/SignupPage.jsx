@@ -1,8 +1,6 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { createUserWithEmailAndPassword } from "firebase/auth";
-import { doc, setDoc } from "firebase/firestore";
-import { auth, db } from "../firebase";
+import { supabase } from "../supabase";
 
 export default function SignupPage() {
   const navigate = useNavigate();
@@ -11,6 +9,7 @@ export default function SignupPage() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [checkEmail, setCheckEmail] = useState(false);
 
   async function handleSubmit(e) {
     e.preventDefault();
@@ -18,26 +17,51 @@ export default function SignupPage() {
     setLoading(true);
 
     try {
-      // 1) Create auth user
-      const cred = await createUserWithEmailAndPassword(auth, email, password);
-      const uid = cred.user.uid;
-
-      // 2) Create Firestore profile doc (basic for now)
-      await setDoc(doc(db, "users", uid), {
-        name,
+      // The name goes in as signup metadata rather than a second write —
+      // the handle_new_user trigger (0005) picks it up server-side and
+      // creates the profiles row itself, so there's no two-step
+      // "create auth user, then separately create a profile" to leave a
+      // half-finished account if the second step fails.
+      const { data, error } = await supabase.auth.signUp({
         email,
-        role: null,
-        createdAt: new Date(),
+        password,
+        options: { data: { name } },
       });
+      if (error) throw error;
 
-      // 3) Redirect to onboarding or home
-      navigate("/onboarding"); // or "/" if we don't have onboarding yet
+      if (data.session) {
+        // Email confirmation is off for this project — signUp already
+        // signed them in, so there's somewhere to send them.
+        navigate("/");
+      } else {
+        // Email confirmation is required — there's no session yet, so
+        // sending them to "/" would just look like signup silently
+        // failed. Tell them what's actually happening instead.
+        setCheckEmail(true);
+      }
     } catch (err) {
       console.error(err);
-      setError("Failed to create account. Please try again.");
+      setError(err.message || "Failed to create account. Please try again.");
     } finally {
       setLoading(false);
     }
+  }
+
+  if (checkEmail) {
+    return (
+      <div className="auth-page">
+        <div className="card auth-card">
+          <h1>Check your email</h1>
+          <p style={{ textAlign: "center" }}>
+            We sent a confirmation link to <strong>{email}</strong>. Click it to
+            finish setting up your account, then log in.
+          </p>
+          <p className="auth-footer">
+            <Link to="/login">Back to login</Link>
+          </p>
+        </div>
+      </div>
+    );
   }
 
   return (
