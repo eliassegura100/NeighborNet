@@ -1,7 +1,8 @@
-import { useMemo } from "react";
-import { GoogleMap, Marker, useLoadScript } from "@react-google-maps/api";
+import { useEffect, useMemo, useState } from "react";
+import { GoogleMap, InfoWindow, Marker, useLoadScript } from "@react-google-maps/api";
+import { UrgencyBadge } from "./Badges";
 
-const containerStyle = { width: "100%", height: "420px" };
+const containerStyle = { width: "100%", height: "800px" };
 
 const MAPS_KEY = import.meta.env.VITE_GMAPS_API_KEY;
 
@@ -12,9 +13,16 @@ export default function MapView({ center, items }) {
   const { isLoaded, loadError } = useLoadScript({
     googleMapsApiKey: MAPS_KEY || "",
   });
-
+ 
+  const [selected, setSelected] = useState(null);
   const mapCenter = useMemo(() => center || { lat: 34.05, lng: -118.25 }, [center]);
-
+ 
+  // if the request list refreshes (e.g. a re-fetch) while a popup is open,
+  // don't leave it pointing at data that may no longer be current
+  useEffect(() => {
+    setSelected(null);
+  }, [items]);
+ 
   if (!MAPS_KEY) {
     return (
       <div className="map-fallback">
@@ -26,7 +34,7 @@ export default function MapView({ center, items }) {
       </div>
     );
   }
-
+ 
   if (loadError) {
     return (
       <div className="map-fallback">
@@ -40,7 +48,7 @@ export default function MapView({ center, items }) {
       </div>
     );
   }
-
+ 
   if (!isLoaded) {
     return (
       <div className="map-fallback">
@@ -48,7 +56,7 @@ export default function MapView({ center, items }) {
       </div>
     );
   }
-
+ 
   return (
     <GoogleMap
       mapContainerStyle={containerStyle}
@@ -58,15 +66,35 @@ export default function MapView({ center, items }) {
         streetViewControl: false,
         mapTypeControl: false,
         fullscreenControl: false,
+        gestureHandling: "greedy",
       }}
+      onClick={() => setSelected(null)}
     >
       {items?.map((r) => (
         <Marker
           key={r.id}
-          position={{ lat: r.location.lat, lng: r.location.lng }}
+          position={{ lat: r.lat, lng: r.lng }}
           title={r.title}
+          onClick={() => setSelected(r)}
         />
       ))}
+ 
+      {selected && (
+        <InfoWindow
+          position={{ lat: selected.lat, lng: selected.lng }}
+          onCloseClick={() => setSelected(null)}
+        >
+          <div className="map-infowindow">
+            <div className="map-infowindow-top">
+              <strong>{selected.title}</strong>
+              <UrgencyBadge urgency={selected.urgency} />
+            </div>
+            {selected.description && <p>{selected.description}</p>}
+            <div className="map-infowindow-meta">{selected.type}</div>
+            {selected.address && <div className="map-infowindow-meta">{selected.address}</div>}
+          </div>
+        </InfoWindow>
+      )}
     </GoogleMap>
   );
 }

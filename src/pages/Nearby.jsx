@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
-import { getFunctions, httpsCallable } from "firebase/functions";
-import { app } from "../supabase";
+import { findNearbyOpenRequests } from "../requestApi";
 import MapView from "../components/MapView";
 import { UrgencyBadge } from "../components/Badges";
 
@@ -18,9 +17,8 @@ export default function Nearby() {
   useEffect(() => {
     if (!coords) return;
     const load = async () => {
-      const fn = httpsCallable(getFunctions(app), "findNearbyOpenRequests");
-      const res = await fn({ lat: coords.lat, lng: coords.lng, radiusKm: 5 });
-      setItems(res.data.items || []);
+      const nearby = await findNearbyOpenRequests({ lat: coords.lat, lng: coords.lng, radiusKm: 5 });
+      setItems(nearby ?? []);
     };
     load();
   }, [coords]);

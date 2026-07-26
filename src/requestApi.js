@@ -1,4 +1,3 @@
-// src/requestApi.js
 //
 // Same public shape as the old Firebase version — createRequest(data),
 // claimRequest(id), completeRequest(id, actualMinutes), etc. — so pages that already call these don't need

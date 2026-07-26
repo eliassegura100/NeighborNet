@@ -36,8 +36,9 @@ export default function HeroArt() {
 
       {/* house 3 — the lit one (signature) */}
       <path d="M255 200L310 150L365 200V270H255V200Z" fill="#2C5F49" />
-      <rect x="332" y="176" width="14" height="14" fill="#F2A93B" opacity="0.9" />
-      <circle cx="339" cy="183" r="20" fill="url(#glow)" />
+      <rect x="334" y="176" width="12" height="12" fill="#F2A93B" opacity="0.9" />
+      <circle cx="340" cy="182" r="18" fill="#F2A93B" opacity="0.1" />
+      <circle cx="340" cy="182" r="25" fill="url(#glow)" />
       <rect x="298" y="234" width="24" height="36" rx="2" fill="#F2A93B" />
       <circle cx="317" cy="252" r="1.6" fill="#0E241C" />
 

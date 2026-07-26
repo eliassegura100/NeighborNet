@@ -72,7 +72,7 @@ export default function BrowseRequestsPage() {
 
       {!loading && requests.length === 0 && !error ? (
         <div className="card empty-state">
-          <p>No open requests within 5km right now — check back soon.</p>
+          <p>No open requests within 5km right now. Check back soon!</p>
         </div>
       ) : (
         <div className="request-grid">

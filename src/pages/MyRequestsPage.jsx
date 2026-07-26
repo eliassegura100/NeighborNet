@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
-import { collection, query, where, orderBy, onSnapshot } from "firebase/firestore";
-import { db } from "../supabase";
+import { supabase } from "../supabase";
 import { useAuth } from "../context/AuthContext";
 import { createRequest } from "../requestApi";
 import { StatusBadge, UrgencyBadge } from "../components/Badges";
@@ -15,21 +14,58 @@ export default function MyRequestsPage() {
   const [submitting, setSubmitting] = useState(false);
   const [requests, setRequests] = useState([]);
 
-  // Subscribe to this user's requests
+  // Load this user's requests, then keep the list live: a card updates
+  // in place the moment a volunteer claims it, the same way Firestore's
+  // onSnapshot did. Realtime only streams changes going forward from the
+  // moment you subscribe, so an initial fetch still has to happen first.
   useEffect(() => {
     if (!user) return;
 
-    const q = query(
-      collection(db, "requests"),
-      where("requesterId", "==", user.uid),
-      orderBy("createdAt", "desc")
-    );
+    let cancelled = false;
 
-    const unsub = onSnapshot(q, (snap) => {
-      setRequests(snap.docs.map((d) => ({ id: d.id, ...d.data() })));
-    });
+    async function loadInitial() {
+      const { data, error } = await supabase
+        .from("requests")
+        .select("*")
+        .eq("requester_id", user.id)
+        .order("created_at", { ascending: false });
 
-    return unsub;
+      if (cancelled) return;
+      if (error) {
+        console.error(error);
+        return;
+      }
+      setRequests(data ?? []);
+    }
+
+    loadInitial();
+
+    const channel = supabase
+      .channel(`my-requests-${user.id}`)
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "requests", filter: `requester_id=eq.${user.id}` },
+        (payload) => {
+          setRequests((prev) => {
+            if (payload.eventType === "INSERT") {
+              return [payload.new, ...prev];
+            }
+            if (payload.eventType === "UPDATE") {
+              return prev.map((r) => (r.id === payload.new.id ? payload.new : r));
+            }
+            if (payload.eventType === "DELETE") {
+              return prev.filter((r) => r.id !== payload.old.id);
+            }
+            return prev;
+          });
+        }
+      )
+      .subscribe();
+
+    return () => {
+      cancelled = true;
+      supabase.removeChannel(channel);
+    };
   }, [user]);
 
   async function handleSubmit(e) {
@@ -48,6 +84,8 @@ export default function MyRequestsPage() {
         urgency,
         estimatedMinutes: 60,
       });
+      // no manual state update needed — the Realtime subscription above
+      // picks up the INSERT and adds it to the list itself
 
       setTitle("");
       setDescription("");
@@ -126,7 +164,7 @@ export default function MyRequestsPage() {
 
           {requests.length === 0 ? (
             <div className="card empty-state">
-              <p>No requests yet — the one you post above will show up here.</p>
+              <p>No requests yet, the one you post above will show up here.</p>
             </div>
           ) : (
             <div className="request-grid">
