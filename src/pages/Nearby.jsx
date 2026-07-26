@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { getFunctions, httpsCallable } from "firebase/functions";
-import { app } from "../firebase";
+import { app } from "../supabase";
 import MapView from "../components/MapView";
 import { UrgencyBadge } from "../components/Badges";
 

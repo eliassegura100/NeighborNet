@@ -1,28 +1,41 @@
 import { createContext, useContext, useEffect, useState } from "react";
-import { onAuthStateChanged, signOut } from "firebase/auth";
-import { auth } from "../firebase";
+import { supabase } from "../supabase";
 
 const AuthContext = createContext();
 
 export function AuthProvider({ children }) {
-  const [user, setUser] = useState(null);
+  const [session, setSession] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Listen once for auth changes
-    const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
-      setUser(firebaseUser || null);
+    // Get whatever session already exists (e.g. after a page refresh)
+    // up front, then keep listening for sign-in/sign-out/token-refresh
+    // events. Supabase's own docs recommend both together — relying on
+    // onAuthStateChange alone can miss the very first render.
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
       setLoading(false);
     });
 
-    return unsubscribe;
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      setSession(session);
+      setLoading(false);
+    });
+
+    return () => subscription.unsubscribe();
   }, []);
 
   function logout() {
-    return signOut(auth);
+    return supabase.auth.signOut();
   }
 
-  const value = { user, loading, logout };
+  // NOTE for the rest of the migration: this is a Supabase user, so it's
+  // shaped like { id, email, ... } — not Firebase's { uid, email, ... }.
+  // Anywhere still doing user.uid (MyRequestsPage's Firestore query is
+  // the one left) needs to become user.id when that page gets rewritten.
+  const value = { user: session?.user ?? null, session, loading, logout };
 
   return (
     <AuthContext.Provider value={value}>

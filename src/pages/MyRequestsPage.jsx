@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { collection, query, where, orderBy, onSnapshot } from "firebase/firestore";
-import { db } from "../firebase";
+import { db } from "../supabase";
 import { useAuth } from "../context/AuthContext";
 import { createRequest } from "../requestApi";
 import { StatusBadge, UrgencyBadge } from "../components/Badges";
